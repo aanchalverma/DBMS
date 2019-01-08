@@ -1,0 +1,94 @@
+1.SELECT B.BOOK_ID,B.TITLE,B.PUBLISHER_NAME,A.AUTHOR_NAME,C.NO_OF_COPIES,L.BRANCH_ID
+ FROM BOOK B,BOOK_AUTHOR A,BOOK_COPIES C,LIBRARAY_BRANCH L
+ WHERE B.BOOK_ID=A.BOOK_ID AND B.BOOK_ID=C.BOOK_ID AND L.BRANCH_ID=C.BRANCH_ID;
+
+ BOOK_ID TITLE		PUBLISHER_NAME	     AUTHOR_NAME
+---------- -------------------- -------------------- --------------------
+NO_OF_COPIES  BRANCH_ID
+------------ ----------
+	 1 DBMS 		MCGRAW_HILL	     NAVATHE
+	  10	    101
+
+	 2 DBMS 		MCGRAW_HILL	     NAVATHE
+	   5	    102
+
+	 3 CN			PEARSON 	     TANENBAUM
+	   2	    103
+
+
+   BOOK_ID TITLE		PUBLISHER_NAME	     AUTHOR_NAME
+---------- -------------------- -------------------- --------------------
+NO_OF_COPIES  BRANCH_ID
+------------ ----------
+	 4 CG			GROUP PLANETA	     EDWARD ANGEL
+	  54	    104
+
+	 5 DS			PEARSON 	     GALVIN
+	  20	    105
+
+
+
+2.SELECT CARD_NO
+  2  FROM BOOK_LENDING
+  3  WHERE DATE_OUT BETWEEN '01-JAN-2017' AND '01-JUL-2017'
+  4  GROUP BY CARD_NO
+  5  HAVING COUNT (*) > 3;
+  
+  
+3. DELETE FROM BOOK
+  2  WHERE BOOK_ID='3';
+
+1 row deleted.
+SQL> SELECT * FROM BOOK;
+
+   BOOK_ID TITLE		PUBLISHER_NAME	     PUB_YEAR
+---------- -------------------- -------------------- ---------
+	 1 DBMS 		MCGRAW_HILL	     01-JAN-17
+	 2 DBMS 		MCGRAW_HILL	     10-JAN-16
+	 4 CG			GROUP PLANETA	     11-SEP-15
+	 5 DS			PEARSON 	     23-MAY-16
+
+4. SQL> CREATE TABLE BOOKPART
+   PARTITION BY RANGE (PUB_YEAR)
+  (PARTITION P1 VALUES LESS THAN('01-JAN-2016'),
+   PARTITION P2 VALUES LESS THAN (MAXVALUE))
+   AS SELECT * FROM BOOK;  2    3    4    5  
+
+Table created.
+
+SQL> SELECT * FROM BOOKPART PARTITION(P1);
+
+   BOOK_ID TITLE		PUBLISHER_NAME	     PUB_YEAR
+---------- -------------------- -------------------- ---------
+	 4 CG			GROUP PLANETA	     11-SEP-15
+
+SQL>  SELECT * FROM BOOKPART PARTITION(P2);
+
+   BOOK_ID TITLE		PUBLISHER_NAME	     PUB_YEAR
+---------- -------------------- -------------------- ---------
+	 1 DBMS 		MCGRAW_HILL	     01-JAN-17
+	 2 DBMS 		MCGRAW_HILL	     10-JAN-16
+	 5 DS			PEARSON 	     23-MAY-16
+
+5. SQL> CREATE VIEW BC AS 
+   SELECT B.BOOK_ID,C.TITLE,B.BRANCH_ID,(B.NO_OF_COPIES
+   -(SELECT COUNT(*) 
+    FROM BOOK_LENDING
+    WHERE B.BOOK_ID=BOOK_ID
+    AND B.BRANCH_ID=BRANCH_ID))
+   	AS NO_OF_COPIES
+    FROM BOOK_COPIES B,BOOK C
+	WHERE B.BOOK_ID=C.BOOK_ID;  2    3    4    5    6    7    8    9  
+
+View created.
+
+SQL> SELECT * FROM BOOK_LENDING;
+
+   BOOK_ID  BRANCH_ID	 CARD_NO DATE_OUT  DATE_IN
+---------- ---------- ---------- --------- ---------
+	 1	  101	    1001 10-JAN-16 01-JAN-17
+	 2	  102	    1001 11-JAN-17 11-MAR-17
+
+
+
+	

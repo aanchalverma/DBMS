@@ -1,0 +1,104 @@
+1. Create the customers with grades above Bangalore's average.
+
+   SELECT GRADE,COUNT(DISTINCT CUSTOMER_ID) AS NO_OF_CUSTOMER
+   FROM CUSTOMER
+   GROUP BY GRADE
+   HAVING GRADE > (SELECT AVG(GRADE)
+   				   FROM CUSTOMER
+   				   WHERE CITY='BANGALORE');
+   				   
+    GRADE NO_OF_CUSTOMER
+---------- --------------
+       400		2
+       300		1
+
+2. Find the name and nos of all salesman who have more than one customer.
+
+	SELECT SALESMAN_ID,NAME
+	FROM SALESMAN S
+	WHERE ((SELECT COUNT (*)
+			FROM CUSTOMER
+			WHERE SALESMAN_ID=S.SALESMAN_ID)>1);
+			
+SALESMAN_ID NAME
+----------- --------------------
+       1000 JOHN
+       2000 RAVI
+
+3. List all salesman and indicate those who have and don't have customer's in their cities. (Use UNION operation).
+
+	SELECT S.SALESMAN_ID, S.NAME, C.CUSTOMER_NAME, S.COMMISION
+	FROM SALESMAN S, CUSTOMER C
+	WHERE S.CITY=C.CITY
+	UNION
+	SELECT SALESMAN_ID, NAME, 'NO MATCH OF CITIES', COMMISION
+	FROM SALESMAN
+	WHERE NOT CITY = ANY(SELECT CITY
+						 FROM CUSTOMER);
+						 
+SALESMAN_ID NAME		 CUSTOMER_NAME	      COMMISION
+----------- -------------------- -------------------- --------------------
+       1000 JOHN		 ANIKA		      25
+       1000 JOHN		 CHETAN 	      25
+       1000 JOHN		 PREETHI	      25
+       2000 RAVI		 NO MATCH OF CITIES   20
+       3000 KUMAR		 ANIKA		      15
+       3000 KUMAR		 CHETAN 	      15
+       3000 KUMAR		 PREETHI	      15
+       4000 RAHUL		 NO MATCH OF CITIES   30
+       5000 DILIP		 NO MATCH OF CITIES   10
+
+9 rows selected.
+
+4. Create a view that finds the salesman who has the customer with the highest order of a day.
+
+CREATE VIEW SALESMAN1 AS (SELECT O.ORD_DATE, S.SALESMAN_ID, S.NAME, O.PURCHASE_AMT
+							  FROM SALESMAN S, ORDERS O
+							  WHERE S.SALESMAN_ID = O.SALESMAN_ID
+							  AND O.PURCHASE_AMT=(SELECT MAX (PURCHASE_AMT)
+							  					  FROM ORDERS C
+							  					  WHERE C.ORD_DATE = O.ORD_DATE));
+					View created.		  					  
+SQL> SELECT * FROM SALESMAN1;
+
+ORD_DATE  SALESMAN_ID NAME		   PURCHASE_AMT
+--------- ----------- -------------------- ------------
+04-MAY-17	 1000 JOHN			   5000
+20-JAN-17	 2000 RAVI			   4500
+24-FEB-17	 2000 RAVI			   1000
+13-APR-17	 3000 KUMAR			   3500
+09-MAR-17	 2000 RAVI			    880
+					  					  
+5. DELETE FROM SALESMAN
+   WHERE SALESMAN_ID=1000;
+   
+1 row deleted.
+
+SQL> SELECT * FROM SALESMAN;
+
+SALESMAN_ID NAME		 CITY		      COMMISION
+----------- -------------------- -------------------- --------------------
+       2000 RAVI		 MYSORE 	      20
+       3000 KUMAR		 BANGALORE	      15
+       4000 RAHUL		 DELHI		      30
+       5000 DILIP		 HYDERABAD	      10
+
+SQL> SELECT * FROM CUSTOMER;
+
+CUSTOMER_ID CUSTOMER_NAME	 CITY			   GRADE SALESMAN_ID
+----------- -------------------- -------------------- ---------- -----------
+	 60 PREETHI		 BANGALORE		     100
+	 70 VIVEK		 MANGALORE		     300
+	 80 BHASKAR		 CHENNAI		     400	2000
+	 90 CHETAN		 BANGALORE		     200	2000
+	100 ANIKA		 BANGALORE		     400	3000
+
+SQL> SELECT * FROM ORDERS;
+
+  ORDER_NO PURCHASE_AMT ORD_DATE  CUSTOMER_ID SALESMAN_ID
+---------- ------------ --------- ----------- -----------
+       102	   4500 20-JAN-17	   60	     2000
+       103	   1000 24-FEB-17	   90	     2000
+       104	   3500 13-APR-17	  100	     3000
+       105	    880 09-MAR-17	   80	     2000
+
