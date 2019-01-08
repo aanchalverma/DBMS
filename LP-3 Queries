@@ -1,0 +1,76 @@
+1.List all the titles of movies directed bu hitchcock.
+SELECT MOV_TITLE
+FROM MOVIES
+WHERE DIR_ID IN (SELECT DIR_ID
+				 FROM DIRECTOR
+			     WHERE DIR_NAME='HITCHCOCK');
+			     
+MOV_TITLE
+--------------------
+CHEF
+GANGS_OF_WASSEYPUR
+
+2.Find the movie names where one or more actors acted in two or more movies.
+SELECT M.MOV_TITLE 
+FROM MOVIES M,MOVIE_CAST MC
+WHERE M.MOV_ID=MC.MOV_ID
+AND ACT_ID IN ( SELECT ACT_ID 
+				FROM MOVIE_CAST 
+				GROUP BY ACT_ID 
+				HAVING COUNT(ACT_ID)>1) 
+				GROUP BY M.MOV_TITLE 
+				HAVING COUNT(*)>=1;
+
+MOV_TITLE
+--------------------
+BAHUBALI2
+BAHUBALI1
+CHEF
+
+3.List all actors who acted in a movie before 2000 and also in a movie after 2015.(Use JOIN operation).
+SELECT A.ACT_NAME,C.MOV_TITLE,C.MOV_YEAR 
+FROM ACTOR A,MOVIE_CAST B,MOVIES C
+WHERE A.ACT_ID=B.ACT_ID 
+AND B.MOV_ID=C.MOV_ID
+AND MOV_YEAR NOT BETWEEN 2000 AND 2015;
+
+ACT_NAME	     MOV_TITLE		    MOV_YEAR
+-------------------- -------------------- ----------
+ANUSHKHA	     BAHUBALI2			2017
+PUNITH		     CHEF			    2017
+
+4.Find the title of movies and number of stars for each movie that has atleast one rating and find the highest number of stars that movie received.Sort the result by movie title.
+SELECT MOV_TITLE,MAX(REV_STARS)
+FROM MOVIES 
+INNER JOIN RATING USING (MOV_ID)
+GROUP BY (MOV_TITLE)
+HAVING MAX(REV_STARS)>0
+ORDER BY MOV_TITLE;
+
+MOV_TITLE	     	MAX(REV_STARS)
+-------------------- -------------------------
+BAHUBALI1	     	2
+BAHUBALI2	     	4
+CHEF		     	5
+GANGS_OF_WASSEYPUR  3
+WARHOUSE	     	4
+
+5.Update rating of all movies by 'Steven Spielberg' to 5.
+UPDATE RATING
+SET REV_STARS=5
+WHERE MOV_ID IN (SELECT MOV_ID
+				 FROM MOVIES M,DIRECTOR D
+				 WHERE M.DIR_ID=D.DIR_ID
+				 AND D.DIR_NAME='STEVE SPIELBERG');
+				 
+1 row updated.
+SQL> SELECT * FROM RATING;
+
+    MOV_ID REV_STARS
+---------- -------------------------
+       101 4
+       102 2
+       103 5
+       104 5
+       105 3
+

@@ -1,0 +1,92 @@
+1.List all the student details studying in the fourth semester 'c' section.
+SELECT S.*,SS.SEM,SS.SEC
+FROM STUDENT S,SEMSEC SS,CLASS C
+WHERE S.USN=C.USN
+AND SS.SSID=C.SSID
+AND SS.SEM=4
+AND SS.SEC='C';
+
+USN	   SNAME		ADDRESS 		  PHONE 			GEN	   SEM		SEC	
+---------- -------------------- -------------------- ---------- --- ----------
+1BI14CS007 ADITYA		SHIMOGA 	     9905542212 	 M	     4		C
+
+2.Compute the total no of male and female students in each semester and each section.
+SELECT SS.SEM,SS.SEC,S.GENDER,COUNT(S.GENDER) AS COUNT
+FROM STUDENT S,SEMSEC SS,CLASS C
+WHERE S.USN=C.USN
+AND SS.SSID=C.SSID
+GROUP BY SS.SEM,SS.SEC,S.GENDER
+ORDER BY SEM;
+
+     SEM 	SEC	 GEN	  COUNT
+---------- ----- --- ----------
+	 3 		A	 M	      2
+	 3 		B	 F	      1
+	 4 		C	 M	      1
+	 5 		A	 F	      3
+	 5 		A	 M	      1
+	 5 		B	 M	      1
+	 8 		A	 F	      1
+	 8 		B	 M	      1
+	 8 		C	 M	      1
+
+3.Create a view of Test1 marks of Student USN '1BI15CS101' in all subjects.
+CREATE VIEW STU_MARKS
+AS (SELECT TEST1,SUBCODE
+    FROM IAMARKS
+    WHERE USN='1BI15CS101');
+    
+View created.
+
+SQL> SELECT * FROM STU_MARKS;
+
+     TEST1 SUBCODE
+---------- --------
+	21 15CS51
+	12 15CS52
+	19 15CS53
+	20 15CS54
+	15 15CS55
+
+4.Calaculate the FinalIA (avg pf best two test marks) and update the corresponding table for all students.
+UPDATE IAMARKS
+SET FINALIA = ((TEST1+TEST2+TEST3)-LEAST(TEST1,TEST2,TEST3))/2;
+
+5 rows updated.
+
+SQL> SELECT * FROM IAMARKS;
+
+USN	   SUBCODE  SSID       TEST1	  TEST2      TEST3    FINALIA
+---------- -------- ----- ---------- ---------- ---------- ----------
+1BI15CS101 15CS51   CSE5B	  21	     23 	21	   22
+1BI15CS101 15CS52   CSE5B	  12	     18 	14	   16
+1BI15CS101 15CS53   CSE5B	  19	     20 	20	   20
+1BI15CS101 15CS54   CSE5B	  20	     20 	19	   20
+1BI15CS101 15CS55   CSE5B	  15	     20 	12	   18
+
+5.Categorize students based on the following criterion:
+If FinalIA=17 to 20 then CAT='Outstanding'
+If FinalIA=12 to 16 then CAT='Average'
+If FinalIA<12 then CAT='Weak'
+Give these details only for 8th semester A,B, and C section students.
+
+SELECT S.USN,S.SNAME,S.ADDRESS,S.PHONE,S.GENDER,
+	(CASE
+	 WHEN IA.FINALIA BETWEEN 17 AND 20 THEN 'OUTSTANDING'
+	 WHEN IA.FINALIA BETWEEN 12 AND 16 THEN 'AVERAGE'
+	 ELSE 'WEAK'
+	 END) AS CAT
+	 FROM STUDENT S,SEMSEC SS,IAMARKS IA,SUBJECT SUB
+	 WHERE S.USN = IA.USN AND
+	 SS.SSID = IA.SSID AND
+	 SUB.SUBCODE = IA.SUBCODE AND 
+	 SUB.SEM=5;
+	 
+USN	   SNAME		ADDRESS 		  PHONE GEN CAT
+---------- -------------------- -------------------- ---------- --- -----------
+1BI15CS101 NEMISH		MANGALURU	     8812332201 M   WEAK
+1BI15CS101 NEMISH		MANGALURU	     8812332201 M   AVERAGE
+1BI15CS101 NEMISH		MANGALURU	     8812332201 M   OUTSTANDING
+1BI15CS101 NEMISH		MANGALURU	     8812332201 M   OUTSTANDING
+1BI15CS101 NEMISH		MANGALURU	     8812332201 M   OUTSTANDING
+
